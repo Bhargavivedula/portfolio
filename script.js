@@ -1,28 +1,145 @@
-<script>
-  // Mobile menu
-  const hamburger = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobileMenu');
-  hamburger.addEventListener('click', () => mobileMenu.classList.toggle('open'));
-  hamburger.addEventListener('keydown', e => e.key === 'Enter' && mobileMenu.classList.toggle('open'));
-  function closeMobile() { mobileMenu.classList.remove('open'); }
+// Wait until the page is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
 
-  // Scroll fade-in
-  const fadeEls = document.querySelectorAll('.fade-in');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-  }, { threshold: 0.1 });
-  fadeEls.forEach(el => observer.observe(el));
+    // ============================
+    // Mobile Navigation Menu
+    // ============================
+    const hamburger = document.getElementById("hamburger");
+    const mobileMenu = document.getElementById("mobileMenu");
 
-  // Contact form
-  function handleSend() {
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const msg = document.getElementById('msg').value.trim();
-    const status = document.getElementById('send-status');
-    if (!name || !email || !msg) { status.textContent = 'Please fill in all fields.'; status.style.color = '#f09595'; return; }
-    const mailto = `mailto:b2399322@gmail.com?subject=Portfolio message from ${encodeURIComponent(name)}&body=${encodeURIComponent(msg + '\n\nFrom: ' + email)}`;
-    window.location.href = mailto;
-    status.textContent = '✓ Opening your mail client...';
-    status.style.color = '#52b788';
-  }
-</script>
+    if (hamburger && mobileMenu) {
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle("open");
+
+            const expanded = hamburger.getAttribute("aria-expanded") === "true";
+            hamburger.setAttribute("aria-expanded", !expanded);
+        }
+
+        hamburger.addEventListener("click", toggleMenu);
+
+        hamburger.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                toggleMenu();
+            }
+        });
+
+        // Close menu when Escape is pressed
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                mobileMenu.classList.remove("open");
+                hamburger.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener("click", (event) => {
+            if (
+                !mobileMenu.contains(event.target) &&
+                !hamburger.contains(event.target)
+            ) {
+                mobileMenu.classList.remove("open");
+                hamburger.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        // Make function available for HTML onclick=""
+        window.closeMobile = function () {
+            mobileMenu.classList.remove("open");
+            hamburger.setAttribute("aria-expanded", "false");
+        };
+    }
+
+    // ============================
+    // Fade-in Animation
+    // ============================
+    const fadeElements = document.querySelectorAll(".fade-in");
+
+    if (fadeElements.length > 0) {
+
+        const observer = new IntersectionObserver((entries, observer) => {
+
+            entries.forEach((entry) => {
+
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                    observer.unobserve(entry.target);
+                }
+
+            });
+
+        }, {
+            threshold: 0.15
+        });
+
+        fadeElements.forEach((element) => {
+            observer.observe(element);
+        });
+    }
+
+    // ============================
+    // Contact Form
+    // ============================
+    window.handleSend = function () {
+
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const messageInput = document.getElementById("msg");
+        const status = document.getElementById("send-status");
+
+        if (!nameInput || !emailInput || !messageInput || !status) {
+            console.error("Contact form elements not found.");
+            return;
+        }
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const message = messageInput.value.trim();
+
+        // Empty validation
+        if (!name || !email || !message) {
+
+            status.textContent = "Please fill in all the fields.";
+            status.style.color = "#f09595";
+
+            return;
+        }
+
+        // Email validation
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(email)) {
+
+            status.textContent = "Please enter a valid email address.";
+            status.style.color = "#f09595";
+
+            return;
+        }
+
+        // Create mailto link
+        const subject = `Portfolio message from ${name}`;
+
+        const body =
+`Name: ${name}
+
+Email: ${email}
+
+Message:
+${message}`;
+
+        const mailtoLink =
+`mailto:b2399322@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        window.location.href = mailtoLink;
+
+        status.textContent = "✓ Opening your mail application...";
+        status.style.color = "#52b788";
+
+        // Clear the form
+        nameInput.value = "";
+        emailInput.value = "";
+        messageInput.value = "";
+    };
+
+});
